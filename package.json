@@ -1,0 +1,19 @@
+{
+  "dependencies": {
+    "chalk": "^2.1.0"
+  },
+  "name": "traintracks",
+  "version": "1.0.0",
+  "description": "The Saturday Times Train Tracks Puzzle solver",
+  "main": "index.js",
+  "author": "Chris Walker <chris@thechriswalker.net>",
+  "license": "MIT",
+  "private": false,
+  "devDependencies": {
+    "tape": "^4.8.0"
+  },
+  "scripts": {
+    "test": "tape test/*.js"
+  },
+  "bin": "./bin/traintracks"
+}

@@ -1,0 +1,72 @@
+#!/usr/bin/env node
+const chalk = require("chalk");
+const puzzle = require("../index");
+
+const args = process.argv.slice(2);
+let animate = false;
+const puzzles = args
+    .map(a => {
+        if (/^--animate$/.test(a)) {
+            animate = 25;
+            return;
+        }
+        try {
+            // try to make a puzzle.
+            return puzzle(a);
+        } catch (e) {
+            return `Bad Puzzle Encoding: ${a}`;
+        }
+    })
+    .filter(Boolean);
+
+async function main() {
+    let fails = 0;
+    for (let i = 0; i < puzzles.length; i++) {
+        const p = puzzles[i];
+        if (typeof p === "string") {
+            console.log(chalk.bold.red(p));
+        } else {
+            console.log("Puzzle: " + p.getCode());
+            let solved;
+            if (animate) {
+                // one by one, animating each.
+                // need to draw first
+                const start = p.draw();
+                console.log(start);
+                solved = await p.solve({
+                    animate,
+                    drawFrame: drawFrame(start)
+                });
+            } else {
+                const drawBoth = drawFrame(p.draw(), false);
+                solved = await p.solve();
+                drawBoth(p);
+            }
+            console.log("Solved:", solved, "- Steps:", p._steps);
+            console.log("");
+            if (!solved) {
+                fails++;
+            }
+        }
+    }
+    process.exitCode = fails;
+}
+
+// move to top of drawing (20 lines up), clear to end of screen
+const clearLastDrawing = "\x1b[19F\x1b[0J";
+const drawFrame = (initial, clear = true) => {
+    const initialSplit = initial.split("\n");
+    const clearer = clear ? clearLastDrawing : "";
+    return puzzle => {
+        const next = puzzle
+            .draw()
+            .split("\n")
+            .map((line, i) => {
+                return initialSplit[i] + "     " + line;
+            })
+            .join("\n");
+        console.log(clearer + next);
+    };
+};
+
+main();
